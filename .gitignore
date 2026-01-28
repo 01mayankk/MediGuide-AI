@@ -37,6 +37,8 @@ ml/models_artifacts/
 ########################################
 data/processed/
 data/interim/
+data/raw/
+data/
 
 ########################################
 # Environment variables / secrets
