@@ -8,6 +8,13 @@ Purpose:
 - Validate output shapes and data integrity
 - Catch silent bugs before model training
 
+How to run (from project root):
+    python -m ml.scripts.verify_preprocessing
+
+IMPORTANT:
+- `ml` is a Python package, not just a folder
+- Always use `-m` to run this module correctly
+
 Design principles:
 - Fast
 - Deterministic
@@ -22,10 +29,6 @@ from pathlib import Path
 import numpy as np
 
 # Import preprocessing from proper package path
-# This works cleanly for:
-# - VS Code (Pylance)
-# - CLI execution
-# - Future CI pipelines
 from ml.src.preprocessing import preprocess_training_data
 
 
@@ -45,9 +48,15 @@ DATA_PATH = PROJECT_ROOT / "data" / "raw" / "mediguide-ai.csv"
 # Verification logic
 # ============================================================
 
-def verify_preprocessing_pipeline() -> None:
+def verify_preprocessing_pipeline(verbose: bool = True) -> None:
     """
     Run a complete verification of the preprocessing pipeline.
+
+    Parameters
+    ----------
+    verbose : bool
+        If True, prints helpful summaries for developers.
+        If False, runs in quiet (CI-style) mode.
 
     This function intentionally:
     - does NOT train a model
@@ -73,8 +82,6 @@ def verify_preprocessing_pipeline() -> None:
     # --------------------------------------------------------
     # Step 2: Shape consistency checks
     # --------------------------------------------------------
-    print("✔ Checking shape consistency...")
-
     assert X_train.shape[0] == y_train.shape[0], (
         "Mismatch between X_train and y_train row counts"
     )
@@ -87,11 +94,14 @@ def verify_preprocessing_pipeline() -> None:
         "Feature count mismatch between train and test"
     )
 
+    if verbose:
+        print(f"✔ X_train shape: {X_train.shape}")
+        print(f"✔ X_test  shape: {X_test.shape}")
+        print(f"✔ Number of features: {X_train.shape[1]}")
+
     # --------------------------------------------------------
     # Step 3: Missing value checks
     # --------------------------------------------------------
-    print("✔ Checking for missing values...")
-
     assert not X_train.isnull().any().any(), (
         "NaN values detected in X_train"
     )
@@ -100,23 +110,34 @@ def verify_preprocessing_pipeline() -> None:
         "NaN values detected in X_test"
     )
 
-    # --------------------------------------------------------
-    # Step 4: Scaler validity checks
-    # --------------------------------------------------------
-    print("✔ Checking scaler object...")
+    if verbose:
+        print("✔ No missing values detected")
 
+    # --------------------------------------------------------
+    # Step 4: Target distribution sanity (informative)
+    # --------------------------------------------------------
+    if verbose:
+        print("✔ Target distribution (training data):")
+        print(y_train.value_counts(normalize=True).round(3))
+
+    # --------------------------------------------------------
+    # Step 5: Scaler validity checks
+    # --------------------------------------------------------
     assert scaler is not None, "Scaler was not returned"
 
-    # StandardScaler is considered fitted if mean_ exists
+    # StandardScaler is fitted if mean_ exists
     assert hasattr(scaler, "mean_"), (
         "Scaler is not fitted (mean_ attribute missing)"
     )
 
-    # --------------------------------------------------------
-    # Step 5: Numerical sanity checks
-    # --------------------------------------------------------
-    print("✔ Checking for infinite values...")
+    if verbose:
+        print("✔ Scaler fitted successfully")
+        print("  • Mean (first 5 features):", scaler.mean_[:5])
+        print("  • Std  (first 5 features):", np.sqrt(scaler.var_)[:5])
 
+    # --------------------------------------------------------
+    # Step 6: Numerical sanity checks
+    # --------------------------------------------------------
     assert np.isfinite(X_train.values).all(), (
         "Infinite values found in X_train"
     )
@@ -125,9 +146,6 @@ def verify_preprocessing_pipeline() -> None:
         "Infinite values found in X_test"
     )
 
-    # --------------------------------------------------------
-    # Final success message
-    # --------------------------------------------------------
     print("✅ Preprocessing verification PASSED")
 
 
@@ -136,4 +154,4 @@ def verify_preprocessing_pipeline() -> None:
 # ============================================================
 
 if __name__ == "__main__":
-    verify_preprocessing_pipeline()
+    verify_preprocessing_pipeline(verbose=True)
