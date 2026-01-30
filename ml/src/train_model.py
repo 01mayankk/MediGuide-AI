@@ -120,6 +120,18 @@ def train() -> None:
 
     print(f"✔ Training samples: {X_train.shape[0]}")
     print(f"✔ Features count : {X_train.shape[1]}")
+    print("🧾 Training feature order:")
+    # --------------------------------------------------------
+    # DEBUG / VERIFICATION: Training feature order
+    # ------------------------------------------------------
+    for idx, col in enumerate(X_train.columns, start=1):
+        print(f"   {idx}. {col}")
+
+    # --------------------------------------------------------
+    # DEBUG / VERIFICATION: Scaler feature order
+    # --------------------------------------------------------
+    print("🧠 Scaler learned feature order:")
+    print(scaler.feature_names_in_)
 
     # --------------------------------------------------------
     # Step 2: Build model
