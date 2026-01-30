@@ -1,27 +1,27 @@
-# MediGuide-AI: Machine Learning System
+# 🧠 MediGuide-AI: Machine Learning System
 
-## Overview
+## 📝 Overview
 
 MediGuide-AI is a production-grade machine learning system designed to predict health risk probabilities based on clinical data. It moves beyond static logic to learn complex, nonlinear patterns from historical patient data.
 
-**Core Capabilities:**
-- **Probabilistic Prediction**: Estimates personalized risk scores rather than binary outcomes.
-- **Automated Pipeline**: End-to-end preprocessing, training, and evaluation.
-- **Schema Validation**: Guarantees inference integrity via "Schema Locking".
-- **Clinical Interpretability**: Post-hoc explainability using SHAP values.
+### ✨ Core Capabilities:
+- **📊 Probabilistic Prediction**: Estimates personalized risk scores rather than binary outcomes.
+- **⚙️ Automated Pipeline**: End-to-end preprocessing, training, and evaluation.
+- **🔐 Schema Validation**: Guarantees inference integrity via "Schema Locking".
+- **🔍 Clinical Interpretability**: Post-hoc explainability using SHAP values.
 
 ---
 
-## Why Machine Learning?
+## 💡 Why Machine Learning?
 
 Traditional systems use fixed thresholds (e.g., `if BMI > 30 then High Risk`). Our ML approach:
-1. **Captures Interactions**: Understands how Age, BMI, and Glucose interact.
-2. **Personalized**: Adjusts risk based on the full patient profile.
-3. **Data-Driven**: Improves as more clinical outcomes are provided.
+1. **🧬 Captures Interactions**: Understands how Age, BMI, and Glucose interact.
+2. **👤 Personalized**: Adjusts risk based on the full patient profile.
+3. **📈 Data-Driven**: Improves as more clinical outcomes are provided.
 
 ---
 
-## System Architecture
+## 🏗️ System Architecture
 
 The following diagram illustrates the high-level architecture of the MediGuide-AI ML system, from raw data to production inference.
 
@@ -69,7 +69,7 @@ graph TD
 
 ---
 
-## Dataflow
+## 🔄 Dataflow
 
 This sequence diagram shows how data moves through the system during a typical inference request.
 
@@ -94,7 +94,7 @@ sequenceDiagram
 
 ---
 
-## System Workflow
+## 🛤️ System Workflow
 
 The lifecycle of the ML model, from development to production readiness.
 
@@ -127,7 +127,7 @@ stateDiagram-v2
 
 ---
 
-## Project Structure & File Responsibilities
+## 📂 Project Structure & File Responsibilities
 
 ### `notebooks/`
 **Purpose**: Exploratory data analysis, prototyping, and documentation of modeling decisions.
@@ -251,7 +251,7 @@ python -m ml.scripts.verify_inference
 
 ---
 
-## How to Run
+## 🚀 How to Run
 
 ### 1. Environment Setup
 ```bash
@@ -325,7 +325,7 @@ python -m ml.src.explain --batch --input-file high_risk_patients.csv --output-di
 
 ---
 
-## Safety and Reliability in Healthcare ML
+## 🛡️ Safety and Reliability in Healthcare ML
 
 ### 1. Schema Enforcement
 **Problem**: Feature order changes between training and inference can cause silent prediction errors.
@@ -374,21 +374,21 @@ def validate_numeric_range(df, column, min_val, max_val):
 - BMI: 10-70 kg/m²
 - Blood pressure: 50-250 mmHg (systolic)
 
-### 4. Model Monitoring Hooks
+### 4. 📈 Model Monitoring Hooks
 While not implemented in this version, production systems should track:
-- Prediction distribution drift (KL divergence from training set)
-- Feature value drift (Kolmogorov-Smirnov test)
-- Calibration decay (Brier score over time)
+- **📉 Prediction distribution drift** (KL divergence from training set)
+- **📊 Feature value drift** (Kolmogorov-Smirnov test)
+- **🎯 Calibration decay** (Brier score over time)
 
 ---
 
-## Explainability and Clinical Interpretability
+## 🗣️ Explainability and Clinical Interpretability
 
-### Why Explainability Matters in Healthcare
+### ❓ Why Explainability Matters in Healthcare
 Black-box predictions are insufficient for clinical decision support. Providers need to understand:
-- Which features most influenced a high-risk prediction?
-- Are model predictions consistent with clinical intuition?
-- Can the model explain edge cases or controversial predictions?
+- **🧐 Which features** most influenced a high-risk prediction?
+- **🤝 consistency**: Are model predictions consistent with clinical intuition?
+- **💡 edge cases**: Can the model explain complex or controversial predictions?
 
 ### Approach: SHAP (SHapley Additive exPlanations)
 SHAP values provide local feature attributions that satisfy desirable mathematical properties (local accuracy, missingness, consistency).
@@ -417,7 +417,7 @@ SHAP values provide local feature attributions that satisfy desirable mathematic
 
 ---
 
-## Future Extensions
+## 🔮 Future Extensions
 
 ### 1. Multi-Disease Prediction
 Current system predicts a single "high risk" outcome. Extensions:
@@ -450,7 +450,7 @@ For multi-institution deployments, train models on decentralized data without sh
 
 ---
 
-## Requirements
+## 📦 Requirements
 
 See `requirements.txt` for full dependency list. Key libraries:
 ```
@@ -465,7 +465,7 @@ joblib>=1.3.0
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 This ML system follows strict code quality standards:
 - All code in `src/` must have corresponding unit tests
@@ -475,7 +475,7 @@ This ML system follows strict code quality standards:
 
 ---
 
-## Contact
+## 📞 Contact
 
 For questions about model architecture or deployment, contact the ML Engineering team.
 
