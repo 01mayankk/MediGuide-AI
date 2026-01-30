@@ -2,101 +2,127 @@
 
 ## Overview
 
-MediGuide-AI is a production-grade machine learning system designed to predict health risk probabilities based on structured clinical data. Unlike rule-based classification systems that rely on hardcoded thresholds and boolean logic, this ML-powered approach learns complex, nonlinear patterns from historical patient data to estimate personalized risk scores.
-
-The system is built for healthcare applications where nuanced risk assessment is critical. It provides probabilistic predictions rather than binary classifications, enabling clinicians to make informed decisions with appropriate context.
+MediGuide-AI is a production-grade machine learning system designed to predict health risk probabilities based on clinical data. It moves beyond static logic to learn complex, nonlinear patterns from historical patient data.
 
 **Core Capabilities:**
-- Probabilistic health risk prediction using ensemble learning
-- Feature engineering and normalization pipeline
-- Model artifact versioning and schema validation
-- Deterministic inference with input verification
-- Post-hoc explainability for clinical interpretability
+- **Probabilistic Prediction**: Estimates personalized risk scores rather than binary outcomes.
+- **Automated Pipeline**: End-to-end preprocessing, training, and evaluation.
+- **Schema Validation**: Guarantees inference integrity via "Schema Locking".
+- **Clinical Interpretability**: Post-hoc explainability using SHAP values.
 
 ---
 
-## Why Machine Learning Over Rule-Based Logic
+## Why Machine Learning?
 
-Traditional healthcare risk assessment tools often use static JSON configurations with fixed thresholds (e.g., "if BMI > 30 and age > 50, risk = high"). This approach has fundamental limitations:
-
-1. **Inability to capture feature interactions**: Real health risk emerges from complex combinations of factors that simple rules cannot encode
-2. **Lack of personalization**: Fixed thresholds ignore patient-specific contexts
-3. **Poor generalization**: Rules optimized for one population may fail on another
-4. **No learning from data**: Cannot improve as new patient outcomes become available
-
-**Our ML Approach:**
-- **Random Forest Classifier**: Chosen for its robustness, interpretability, and ability to handle mixed feature types without extensive preprocessing
-- **Ensemble learning**: Reduces variance and overfitting compared to single decision trees
-- **Non-parametric**: Makes minimal assumptions about data distribution
-- **Feature importance**: Naturally provides clinical insights into risk drivers
+Traditional systems use fixed thresholds (e.g., `if BMI > 30 then High Risk`). Our ML approach:
+1. **Captures Interactions**: Understands how Age, BMI, and Glucose interact.
+2. **Personalized**: Adjusts risk based on the full patient profile.
+3. **Data-Driven**: Improves as more clinical outcomes are provided.
 
 ---
 
-## ML System Architecture
+## System Architecture
+
+The following diagram illustrates the high-level architecture of the MediGuide-AI ML system, from raw data to production inference.
+
+```mermaid
+graph TD
+    subgraph "Data Layer"
+        RawData[("Raw Healthcare Data <br/>(CSV/DB)")]
+    end
+
+    subgraph "Training Pipeline"
+        Preprocess["Preprocessing Pipeline <br/>(validation, scaling, imputation)"]
+        Split["Stratified Splitting"]
+        Train["Random Forest Training <br/>(Hyperparameter Tuning)"]
+        Eval["Model Evaluation <br/>(ROC-AUC, Precision/Recall)"]
+    end
+
+    subgraph "Artifact Storage"
+        ModelArtifact["random_forest_model.pkl"]
+        ScalerArtifact["scaler.pkl"]
+        SchemaArtifact["feature_schema.json"]
+    end
+
+    subgraph "Inference Layer"
+        API["Inference API <br/>(FastAPI/Batch)"]
+        Validation["Schema & Range Validation"]
+        Predict["Calibrated Prediction"]
+        Explain["SHAP Explainability"]
+    end
+
+    RawData --> Preprocess
+    Preprocess --> Split
+    Split --> Train
+    Train --> Eval
+    Eval --> ModelArtifact
+    Eval --> ScalerArtifact
+    Eval --> SchemaArtifact
+
+    SchemaArtifact -.-> Validation
+    ModelArtifact --> Validation
+    ScalerArtifact --> Validation
+    Validation --> Predict
+    Predict --> API
+    Predict --> Explain
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     Raw Healthcare Data                      │
-│                    (CSV / Database Export)                   │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Preprocessing Pipeline                      │
-│  • Feature validation & type checking                        │
-│  • Missing value imputation                                  │
-│  • Outlier detection                                         │
-│  • Feature scaling (StandardScaler)                          │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Train/Test Splitting                       │
-│              (Stratified, reproducible seed)                 │
-└──────────────┬────────────────────────┬─────────────────────┘
-               │                        │
-               ▼                        ▼
-        Training Set              Validation Set
-               │                        │
-               ▼                        │
-┌──────────────────────────────┐       │
-│   Random Forest Training     │       │
-│   • Hyperparameter tuning    │       │
-│   • Cross-validation         │       │
-│   • Class balancing          │       │
-└──────────────┬───────────────┘       │
-               │                        │
-               ▼                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Model Evaluation                          │
-│   • Accuracy, Precision, Recall, F1                          │
-│   • ROC-AUC, PR-AUC                                          │
-│   • Confusion matrix analysis                                │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│               Artifact Serialization Layer                   │
-│   • random_forest_model.pkl                                  │
-│   • scaler.pkl                                               │
-│   • feature_schema.json (schema locking)                     │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Inference System                          │
-│   • Schema validation (feature order, types)                 │
-│   • Defensive input checks                                   │
-│   • Probability calibration                                  │
-│   • Batch/real-time prediction                               │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 Verification & Testing                       │
-│   • Unit tests for preprocessing logic                       │
-│   • Integration tests for end-to-end flow                    │
-│   • Artifact integrity checks                                │
-└─────────────────────────────────────────────────────────────┘
+
+---
+
+## Dataflow
+
+This sequence diagram shows how data moves through the system during a typical inference request.
+
+```mermaid
+sequenceDiagram
+    participant User as Clinician/API
+    participant Inf as inference.py
+    participant Schema as feature_schema.json
+    participant Scaler as scaler.pkl
+    participant Model as random_forest_model.pkl
+
+    User->>Inf: Patient Data (JSON)
+    Inf->>Schema: Load & Validate Schema
+    Schema-->>Inf: Validated Features
+    Note over Inf: Enforce Feature Order
+    Inf->>Scaler: Transform Features
+    Scaler-->>Inf: Normalized Vector
+    Inf->>Model: Predict Probability
+    Model-->>Inf: Risk Score (0.0 - 1.0)
+    Inf-->>User: Risk Assessment + Explanation
+```
+
+---
+
+## System Workflow
+
+The lifecycle of the ML model, from development to production readiness.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Research: Notebook Exploration
+    Research --> Preprocessing: Feature Engineering
+    Preprocessing --> Training: Model Optimization
+    Training --> Evaluation: Performance Metrics
+    
+    state Evaluation {
+        [*] --> MetricsCheck
+        MetricsCheck --> SchemaCheck
+        SchemaCheck --> [*]
+    }
+
+    Evaluation --> Verification: run_all_verifications.py
+    
+    state Verification {
+        [*] --> DataIntegrity
+        DataIntegrity --> ModelIntegrity
+        ModelIntegrity --> InferenceSmokeTest
+        InferenceSmokeTest --> [*]
+    }
+
+    Verification --> Deployment: Push Artifacts
+    Deployment --> Monitoring: Drift Detection
+    Monitoring --> Research: Retraining Loop
 ```
 
 ---
@@ -255,6 +281,8 @@ python -m ml.src.evaluate_model --model-path model_artifacts/random_forest_model
 # Generate classification report
 python -m ml.src.evaluate_model --report --output metrics/report.json
 ```
+
+---
 
 ### 4. Running Inference
 ```bash
