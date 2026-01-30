@@ -1,0 +1,25 @@
+# ------------------------------
+# Core Backend Framework
+# ------------------------------
+fastapi
+uvicorn
+
+# ------------------------------
+# Data Validation
+# ------------------------------
+pydantic
+
+# ------------------------------
+# ML inference dependencies
+# (already used in ML layer, but
+# required at runtime by backend)
+# ------------------------------
+numpy
+pandas
+scikit-learn
+joblib
+
+# ------------------------------
+# Optional (recommended)
+# ------------------------------
+python-dotenv
