@@ -857,8 +857,32 @@ body {
   border-radius: 16px;
   max-height: 250px;
   overflow-y: auto;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg), 0 10px 40px rgba(0,0,0,0.3);
   border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+[data-theme="dark"] .custom-dropdown-menu {
+  background: rgba(11, 17, 32, 0.98);
+}
+
+/* Premium Scrollbar for Dropdown */
+.custom-dropdown-menu::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-dropdown-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.custom-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary);
 }
 
 .dropdown-item {
