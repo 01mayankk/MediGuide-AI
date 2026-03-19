@@ -104,8 +104,25 @@ const App = () => {
   useEffect(() => {
     localStorage.setItem('mediguide_user_id', currentProfileId);
     const saved = localStorage.getItem(`mediguide_history_${currentProfileId}`);
-    setHistory(saved ? JSON.parse(saved) : []);
+    const parsedHistory = saved ? JSON.parse(saved) : [];
+    setHistory(parsedHistory);
     setResult(null); // Clear result on user switch
+    
+    // Auto-fill form with the last known vitals to save user time!
+    if (parsedHistory.length > 0) {
+      const last = parsedHistory[parsedHistory.length - 1].metrics;
+      setFormData({
+        pregnancies: last.pregnancies !== undefined ? String(last.pregnancies) : '',
+        glucose: last.glucose !== undefined ? String(last.glucose) : '',
+        bloodpressure: last.bloodpressure !== undefined ? String(last.bloodpressure) : '',
+        skinthickness: last.skinthickness !== undefined ? String(last.skinthickness) : '',
+        insulin: last.insulin !== undefined ? String(last.insulin) : '',
+        bmi: last.bmi !== undefined ? String(last.bmi) : '',
+        diabetespedigreefunction: last.diabetespedigreefunction !== undefined ? String(last.diabetespedigreefunction) : ''
+      });
+    } else {
+      setFormData({ pregnancies: '', glucose: '', bloodpressure: '', skinthickness: '', insulin: '', bmi: '', diabetespedigreefunction: '' });
+    }
   }, [currentProfileId]);
 
   useEffect(() => {
