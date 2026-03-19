@@ -86,6 +86,7 @@ const App = () => {
   const [error, setError] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [newProfile, setNewProfile] = useState({ name: '', dob: '', gender: 'Female' });
+  const [showAllMetrics, setShowAllMetrics] = useState(false);
   
   // History State
   const [history, setHistory] = useState(() => {
@@ -110,6 +111,7 @@ const App = () => {
     
     // Auto-fill form with the last known vitals to save user time!
     if (parsedHistory.length > 0) {
+      setShowAllMetrics(false); // Auto-hide static metrics for returning users!
       const last = parsedHistory[parsedHistory.length - 1].metrics;
       setFormData({
         pregnancies: last.pregnancies !== undefined ? String(last.pregnancies) : '',
@@ -121,6 +123,7 @@ const App = () => {
         diabetespedigreefunction: last.diabetespedigreefunction !== undefined ? String(last.diabetespedigreefunction) : ''
       });
     } else {
+      setShowAllMetrics(true); // Force show everything for brand new profiles!
       setFormData({ pregnancies: '', glucose: '', bloodpressure: '', skinthickness: '', insulin: '', bmi: '', diabetespedigreefunction: '' });
     }
   }, [currentProfileId]);
@@ -148,11 +151,14 @@ const App = () => {
     setNewProfile({ name: '', dob: '', gender: 'Female' });
   };
 
-  const numberInputs = [
+  const coreInputs = [
     { name: 'glucose', label: 'Blood Sugar Level', helper: 'Usually checked after fasting (mg/dL)', min: 1, icon: <Droplet size={18} /> },
     { name: 'bloodpressure', label: 'Blood Pressure', helper: 'The bottom number of your reading (Diastolic in mm Hg)', min: 1, icon: <Activity size={18} /> },
-    { name: 'skinthickness', label: 'Skin Thickness', helper: 'Body fat estimate on the back of your arm (in mm)', min: 1, icon: <Ruler size={18} /> },
     { name: 'insulin', label: 'Insulin Level', helper: 'Shows how your body handles sugar (mu U/ml)', min: 0, icon: <Beaker size={18} /> },
+  ];
+
+  const staticInputs = [
+    { name: 'skinthickness', label: 'Skin Thickness', helper: 'Body fat estimate on the back of your arm (in mm)', min: 1, icon: <Ruler size={18} /> },
     { name: 'bmi', label: 'Body Mass Index (BMI)', helper: 'Calculated from your weight and height (kg/m²)', min: 1, step: "0.1", icon: <Scale size={18} /> },
   ];
 
@@ -308,23 +314,7 @@ const App = () => {
             </div>
             
             <form onSubmit={handleSubmit} className="clinical-form">
-              {currentProfile.gender === 'Female' && (
-                <div className="input-group">
-                  <label><Heart size={16} className="input-icon" /> Pregnancies</label>
-                  <span className="helper-text">Number of times you have been pregnant</span>
-                  <div className="input-wrapper" style={{zIndex: 50}}>
-                    <CustomDropdown
-                      name="pregnancies"
-                      value={formData.pregnancies}
-                      onChange={handleChange}
-                      options={pregnancyOptions}
-                      placeholder="Select amount"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {numberInputs.map((input) => (
+              {coreInputs.map((input) => (
                 <div key={input.name} className="input-group">
                   <label>
                     <span className="input-icon-wrapper">{input.icon}</span> {input.label}
@@ -347,19 +337,71 @@ const App = () => {
                 </div>
               ))}
 
-              <div className="input-group">
-                <label><Brain size={16} className="input-icon" /> Family History</label>
-                <span className="helper-text">Does anyone in your immediate family have diabetes?</span>
-                <div className="input-wrapper" style={{zIndex: 40}}>
-                  <CustomDropdown
-                    name="diabetespedigreefunction"
-                    value={formData.diabetespedigreefunction}
-                    onChange={handleChange}
-                    options={familyHistoryOptions}
-                    placeholder="Select option"
-                  />
+              {history.length > 0 && (
+                <div className="metrics-toggle-wrapper fade-in">
+                  <button type="button" className="toggle-metrics-btn" onClick={() => setShowAllMetrics(!showAllMetrics)}>
+                    {showAllMetrics ? 'Hide Baseline Metrics' : 'Update Baseline Metrics'}
+                    <ChevronDown size={16} style={{ transition: 'transform 0.3s', transform: showAllMetrics ? 'rotate(180deg)' : 'none' }} />
+                  </button>
                 </div>
-              </div>
+              )}
+
+              {(showAllMetrics || history.length === 0) && (
+                <div className="static-metrics-container slide-down-anim">
+                  {currentProfile.gender === 'Female' && (
+                    <div className="input-group">
+                      <label><Heart size={16} className="input-icon" /> Pregnancies</label>
+                      <span className="helper-text">Number of times you have been pregnant</span>
+                      <div className="input-wrapper" style={{zIndex: 50}}>
+                        <CustomDropdown
+                          name="pregnancies"
+                          value={formData.pregnancies}
+                          onChange={handleChange}
+                          options={pregnancyOptions}
+                          placeholder="Select amount"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {staticInputs.map((input) => (
+                    <div key={input.name} className="input-group">
+                      <label>
+                        <span className="input-icon-wrapper">{input.icon}</span> {input.label}
+                      </label>
+                      {input.helper && <span className="helper-text">{input.helper}</span>}
+                      <div className="input-wrapper">
+                        <input
+                          className="clinical-input neumorphic-input"
+                          type="number"
+                          name={input.name}
+                          value={formData[input.name]}
+                          onChange={handleChange}
+                          min={input.min}
+                          step={input.step || "1"}
+                          placeholder={`e.g. 120`}
+                          required
+                        />
+                        <div className="input-focus-glow"></div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="input-group">
+                    <label><Brain size={16} className="input-icon" /> Family History</label>
+                    <span className="helper-text">Does anyone in your immediate family have diabetes?</span>
+                    <div className="input-wrapper" style={{zIndex: 40}}>
+                      <CustomDropdown
+                        name="diabetespedigreefunction"
+                        value={formData.diabetespedigreefunction}
+                        onChange={handleChange}
+                        options={familyHistoryOptions}
+                        placeholder="Select option"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {error && <div className="error-message glow-box-danger">{error}</div>}
 
